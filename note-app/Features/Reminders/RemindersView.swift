@@ -4,9 +4,9 @@ struct RemindersView: View {
     var body: some View {
         NavigationStack {
             Text("Reminders")
-                .navigationTitle("Reminders")
+                .navigationTitle(AppTab.reminders.title)
                 .appToolbar()
-
+            
         }
     }
 }

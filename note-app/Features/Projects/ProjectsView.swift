@@ -4,9 +4,9 @@ struct ProjectsView: View {
     var body: some View {
         NavigationStack {
             Text("Projects")
-                .navigationTitle("Projects")
+                .navigationTitle(AppTab.projects.title)
                 .appToolbar()
-
+            
         }
     }
 }

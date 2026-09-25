@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AppToolbar: ViewModifier {
     @State private var showSettings = false
-
+    
     func body(content: Content) -> some View {
         content
             .toolbar {
@@ -11,9 +11,9 @@ struct AppToolbar: ViewModifier {
                         print("add")
                     }
                 }
-
+                
                 ToolbarSpacer(.fixed, placement: .topBarTrailing)
-
+                
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu("More", systemImage: "ellipsis") {
                         Button("Settings", systemImage: "gear") {
