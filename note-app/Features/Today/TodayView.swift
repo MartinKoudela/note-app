@@ -36,7 +36,14 @@ struct TodayView: View {
                         description: Text("You've completed all tasks for today.")
                     )
                 } else {
-                    Text("Tasks list")
+                    VStack(alignment: .leading, spacing: 16) {
+                        ProgressView(value: Double(completedCount), total: Double(taskCount)) {
+                            Text("\(completedCount) of \(taskCount) done")
+                        }
+                        Text("Tasks list")
+                    }
+                    .padding()
+                    .frame(maxHeight: .infinity, alignment: .top)
                 }
             }
             .navigationTitle(Date.now.formatted(.dateTime.weekday(.wide)).capitalized)
