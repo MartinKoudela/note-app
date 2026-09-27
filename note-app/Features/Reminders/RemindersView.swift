@@ -1,15 +1,15 @@
 import SwiftUI
 
 struct RemindersView: View {
-
+    
     private let reminders: [TaskItem] = []
-
+    
     private var reminderCount: Int {
         reminders.count
     }
-
-    @State private var showAddReminder = false
-
+    
+    @State private var activeAdd: AddAction?
+    
     var body: some View {
         NavigationStack {
             Group {
@@ -19,20 +19,16 @@ struct RemindersView: View {
                     } description: {
                         Text("Reminders will appear here.")
                     } actions: {
-                        Button("Add Reminder") {
-                            showAddReminder = true
-                        }
-                        .buttonStyle(.glassProminent)
+                        Button("Add Reminder") { activeAdd = .reminder }
+                            .buttonStyle(.glassProminent)
                     }
                 } else {
                     Text("Reminders")
                 }
             }
             .navigationTitle(AppTab.reminders.title)
-            .appToolbar()
-            .sheet(isPresented: $showAddReminder) {
-                AddTaskView()
-            }
+            .appToolbar(primary: .reminder)
+            .sheet(item: $activeAdd) { AddSheet(action: $0) }
         }
     }
 }

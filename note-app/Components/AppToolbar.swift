@@ -1,15 +1,26 @@
 import SwiftUI
 
 struct AppToolbar: ViewModifier {
+    let primary: AddAction
+    
     @State private var showSettings = false
-    @State private var showAddTask = false
+    @State private var activeAdd: AddAction?
     
     func body(content: Content) -> some View {
         content
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Add", systemImage: "plus") {
-                        showAddTask = true
+                    Menu {
+                        Button("New Task", systemImage: "checklist") {
+                            activeAdd = .task
+                        }
+                        Button("New Project", systemImage: "folder.badge.plus") {
+                            activeAdd = .project
+                        }
+                    } label: {
+                        Label("Add", systemImage: "plus")
+                    } primaryAction: {
+                        activeAdd = primary
                     }
                 }
                 
@@ -23,8 +34,8 @@ struct AppToolbar: ViewModifier {
                     }
                 }
             }
-            .sheet(isPresented: $showAddTask) {
-                AddTaskView()
+            .sheet(item: $activeAdd) { action in
+                AddSheet(action: action)
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
@@ -33,7 +44,7 @@ struct AppToolbar: ViewModifier {
 }
 
 extension View {
-    func appToolbar() -> some View {
-        modifier(AppToolbar())
+    func appToolbar(primary: AddAction) -> some View {
+        modifier(AppToolbar(primary: primary))
     }
 }

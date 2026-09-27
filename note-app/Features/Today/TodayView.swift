@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TodayView: View {
-
+    
     private let items: [TaskItem] = []
     
     private var todayItems: [TaskItem] {
@@ -16,8 +16,8 @@ struct TodayView: View {
         todayItems.filter(\.isCompleted).count
     }
     
-    @State private var showAddTask = false
-
+    @State private var activeAdd: AddAction?
+    
     var body: some View {
         NavigationStack {
             Group {
@@ -27,10 +27,8 @@ struct TodayView: View {
                     } description: {
                         Text("Tasks due today will appear here.")
                     } actions: {
-                        Button("Add Task") {
-                            showAddTask = true
-                        }
-                        .buttonStyle(.glassProminent)
+                        Button("Add Task") { activeAdd = .todayTask }
+                            .buttonStyle(.glassProminent)
                     }
                 } else {
                     VStack(alignment: .leading, spacing: 16) {
@@ -60,10 +58,8 @@ struct TodayView: View {
             }
             .navigationTitle(Date.now.formatted(.dateTime.weekday(.wide)).capitalized)
             .navigationSubtitle(Date.now.formatted(.dateTime.day().month(.wide)))
-            .appToolbar()
-            .sheet(isPresented: $showAddTask) {
-                AddTaskView()
-            }
+            .appToolbar(primary: .todayTask)
+            .sheet(item: $activeAdd) { AddSheet(action: $0) }
         }
     }
 }
