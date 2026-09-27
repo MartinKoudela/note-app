@@ -1,12 +1,18 @@
 import SwiftUI
+import SwiftData
+
 
 struct RemindersView: View {
     
-    private let reminders: [TaskItem] = []
-    
+    @Query(sort: \TaskItem.createdAt) private var items: [TaskItem]
+
     private var reminderCount: Int {
         reminders.count
     }
+    
+    private var reminders: [TaskItem] {
+          items.filter(\.hasReminder)
+      }
     
     @State private var activeAdd: AddAction?
     
@@ -23,7 +29,10 @@ struct RemindersView: View {
                             .buttonStyle(.glassProminent)
                     }
                 } else {
-                    Text("Reminders")
+                    List(reminders) { item in
+                        TaskRow(item: item)
+                    }
+                    .listStyle(.plain)
                 }
             }
             .navigationTitle(AppTab.reminders.title)
@@ -35,4 +44,6 @@ struct RemindersView: View {
 
 #Preview {
     RemindersView()
+        .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
+
 }

@@ -1,8 +1,11 @@
 import SwiftUI
+import SwiftData
 
 struct AddProjectView: View {
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    
     
     @State private var title = ""
     @State private var deadline: Date?
@@ -22,8 +25,12 @@ struct AddProjectView: View {
                     Button(role: .close) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(role: .confirm) { dismiss() }
-                        .disabled(title.isEmpty)
+                    Button(role: .confirm) {
+                        let project = Project(name: title, deadline: deadline)
+                        modelContext.insert(project)
+                        dismiss()
+                    }
+                    .disabled(title.isEmpty)
                 }
             }
         }
@@ -32,4 +39,5 @@ struct AddProjectView: View {
 
 #Preview {
     AddProjectView()
+        .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
 }

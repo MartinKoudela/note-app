@@ -1,9 +1,9 @@
 import SwiftUI
+import SwiftData
 
 struct ProjectsView: View {
     
-    private let projects: [Project] = []
-    
+    @Query(sort: \Project.sortOrder) private var projects: [Project]
     
     private var projectCount: Int {
         projects.count
@@ -37,4 +37,6 @@ struct ProjectsView: View {
 
 #Preview {
     ProjectsView()
+        .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
+    
 }

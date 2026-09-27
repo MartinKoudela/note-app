@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 enum AppTab: Hashable {
     case today, projects, reminders, search
@@ -48,4 +49,5 @@ struct RootTabView: View {
 
 #Preview {
     RootTabView()
+        .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
 }

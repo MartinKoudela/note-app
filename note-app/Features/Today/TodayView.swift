@@ -1,8 +1,9 @@
 import SwiftUI
+import SwiftData
 
 struct TodayView: View {
     
-    private let items: [TaskItem] = []
+    @Query(sort: \TaskItem.createdAt) private var items: [TaskItem]
     
     private var todayItems: [TaskItem] {
         items.filter { Calendar.current.isDateInToday($0.dueDate ?? .distantPast) }
@@ -66,4 +67,6 @@ struct TodayView: View {
 
 #Preview {
     TodayView()
+        .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
+    
 }
