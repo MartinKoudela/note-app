@@ -1,18 +1,18 @@
 import SwiftUI
 
-struct TodayToolbar: ViewModifier {
+struct AppToolbar: ViewModifier {
     @State private var showSettings = false
-    @State private var showAddCard = false
+    @State private var showAddTask = false
     
     func body(content: Content) -> some View {
         content
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Add", systemImage: "plus") {
-                        showAddCard = true
+                        showAddTask = true
                     }
                 }
-
+                
                 ToolbarSpacer(.fixed, placement: .topBarTrailing)
                 
                 ToolbarItem(placement: .topBarTrailing) {
@@ -23,7 +23,7 @@ struct TodayToolbar: ViewModifier {
                     }
                 }
             }
-            .sheet(isPresented: $showAddCard) {
+            .sheet(isPresented: $showAddTask) {
                 AddTaskView()
             }
             .sheet(isPresented: $showSettings) {
@@ -34,6 +34,6 @@ struct TodayToolbar: ViewModifier {
 
 extension View {
     func appToolbar() -> some View {
-        modifier(TodayToolbar())
+        modifier(AppToolbar())
     }
 }

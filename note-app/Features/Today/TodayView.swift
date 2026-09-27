@@ -1,9 +1,22 @@
 import SwiftUI
 
 struct TodayView: View {
-    // test data
-    private let taskCount = 3
-    private let completedCount = 2
+
+    private let items: [TaskItem] = []
+    
+    private var todayItems: [TaskItem] {
+        items.filter { Calendar.current.isDateInToday($0.dueDate ?? .distantPast) }
+    }
+    
+    private var taskCount: Int {
+        todayItems.count
+    }
+    
+    private var completedCount: Int {
+        todayItems.filter(\.isCompleted).count
+    }
+    
+    @State private var showAddTask = false
 
     var body: some View {
         NavigationStack {
@@ -15,7 +28,7 @@ struct TodayView: View {
                         Text("Tasks due today will appear here.")
                     } actions: {
                         Button("Add Task") {
-                            print("add")
+                            showAddTask = true
                         }
                         .buttonStyle(.glassProminent)
                     }
@@ -23,19 +36,22 @@ struct TodayView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         HStack(spacing: 12) {
                             ProgressView(value: Double(completedCount), total: Double(taskCount))
-
+                            
                             Text("\(completedCount) of \(taskCount) done")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .monospacedDigit()
                         }
                         .accessibilityElement(children: .combine) // voiceover
-
+                        
                         if completedCount == taskCount {
                             Label("All done", systemImage: "checkmark.circle.fill")
                                 .foregroundStyle(.secondary)
                         } else {
-                            Text("Tasks list")
+                            List(todayItems) { item in
+                                TaskRow(item: item)
+                            }
+                            .listStyle(.plain)
                         }
                     }
                     .padding()
@@ -45,6 +61,9 @@ struct TodayView: View {
             .navigationTitle(Date.now.formatted(.dateTime.weekday(.wide)).capitalized)
             .navigationSubtitle(Date.now.formatted(.dateTime.day().month(.wide)))
             .appToolbar()
+            .sheet(isPresented: $showAddTask) {
+                AddTaskView()
+            }
         }
     }
 }
