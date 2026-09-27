@@ -1,20 +1,10 @@
 import SwiftUI
 
 struct TodayView: View {
+    // test data
     private let taskCount = 3
     private let completedCount = 2
-    
-    private var subtitle: String {
-        let date = Date.now.formatted(.dateTime.day().month(.wide))
-        
-        if taskCount == 0 {
-            return "\(date) • No tasks"
-        }
-        
-        let word = taskCount == 1 ? "task" : "tasks"
-        return "\(date) • \(taskCount) \(word)"
-    }
-    
+
     var body: some View {
         NavigationStack {
             Group {
@@ -29,25 +19,31 @@ struct TodayView: View {
                         }
                         .buttonStyle(.glassProminent)
                     }
-                } else if completedCount == taskCount {
-                    ContentUnavailableView(
-                        "All Done",
-                        systemImage: "checkmark.circle",
-                        description: Text("You've completed all tasks for today.")
-                    )
                 } else {
                     VStack(alignment: .leading, spacing: 16) {
-                        ProgressView(value: Double(completedCount), total: Double(taskCount)) {
+                        HStack(spacing: 12) {
+                            ProgressView(value: Double(completedCount), total: Double(taskCount))
+
                             Text("\(completedCount) of \(taskCount) done")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
                         }
-                        Text("Tasks list")
+                        .accessibilityElement(children: .combine) // voiceover
+
+                        if completedCount == taskCount {
+                            Label("All done", systemImage: "checkmark.circle.fill")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("Tasks list")
+                        }
                     }
                     .padding()
                     .frame(maxHeight: .infinity, alignment: .top)
                 }
             }
             .navigationTitle(Date.now.formatted(.dateTime.weekday(.wide)).capitalized)
-            .navigationSubtitle(subtitle)
+            .navigationSubtitle(Date.now.formatted(.dateTime.day().month(.wide)))
             .appToolbar()
         }
     }
