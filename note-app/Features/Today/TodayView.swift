@@ -35,12 +35,15 @@ struct TodayView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         HStack(spacing: 12) {
                             ProgressView(value: Double(completedCount), total: Double(taskCount))
-                            
+
                             Text("\(completedCount) of \(taskCount) done")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .monospacedDigit()
+                                .contentTransition(.numericText(value: Double(completedCount)))
                         }
+                        .animation(.spring(duration: 0.4, bounce: 0.2), value: completedCount)
+                        .animation(.spring(duration: 0.4, bounce: 0.2), value: taskCount)
                         .accessibilityElement(children: .combine) // voiceover
                         
                         if completedCount == taskCount {

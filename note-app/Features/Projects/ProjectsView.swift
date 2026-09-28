@@ -24,7 +24,10 @@ struct ProjectsView: View {
                             .buttonStyle(.glassProminent)
                     }
                 } else {
-                    Text("Projects")
+                    List(projects) { project in
+                        ProjectRow(project: project)
+                    }
+                    .listStyle(.plain)
                 }
             }
             .navigationTitle(AppTab.projects.title)

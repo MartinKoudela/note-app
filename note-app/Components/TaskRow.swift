@@ -37,13 +37,25 @@ struct TaskRow: View {
     
     @ViewBuilder
     private var subtitle: some View {
-        if let date = item.dueDate {
-            if isOverdue {
-                Text("\(item.project?.name ?? "No project") • \(date.formatted(.relative(presentation: .named)))")
-            } else if item.hasDueTime {
-                Label(date.formatted(date: .omitted, time: .shortened),
-                      systemImage: item.hasReminder ? "bell" : "bell.slash")
-                .labelStyle(.titleAndIcon)
+        HStack(spacing: 4) {
+            if let project = item.project {
+                Text(project.name)
+            }
+
+            if let date = item.dueDate {
+                if item.project != nil {
+                    Text("•")
+                }
+
+                if isOverdue {
+                    Text(date.formatted(.relative(presentation: .named)))
+                } else if item.hasDueTime {
+                    Label(date.formatted(date: .omitted, time: .shortened),
+                          systemImage: item.hasReminder ? "bell" : "bell.slash")
+                    .labelStyle(.titleAndIcon)
+                } else {
+                    Text(date.formatted(.dateTime.day().month()))
+                }
             }
         }
     }
