@@ -17,23 +17,23 @@ struct TaskRow: View {
             
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 2) {
-                    if item.priority != .none {
-                        Text(item.priority.marks)
-                            .foregroundStyle(.red)
+                        if item.priority != .none {
+                            Text(item.priority.marks)
+                                .foregroundStyle(.red)
+                        }
+                        Text(item.title)
                     }
-                    Text(item.title)
+                    .foregroundStyle(item.isCompleted ? .secondary : .primary)
+                    
+                    subtitle
+                        .font(.footnote)
+                        .foregroundStyle(isOverdue ? .red : .secondary)
                 }
-                .foregroundStyle(item.isCompleted ? .secondary : .primary)
-                
-                subtitle
-                    .font(.footnote)
-                    .foregroundStyle(isOverdue ? .red : .secondary)
+            }
+            .onChange(of: item.isCompleted) { _, done in
+                item.completedAt = done ? .now : nil
             }
         }
-        .onChange(of: item.isCompleted) { _, done in
-            item.completedAt = done ? .now : nil
-        }
-    }
     
     @ViewBuilder
     private var subtitle: some View {

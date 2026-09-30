@@ -31,6 +31,7 @@ struct ProjectsView: View {
                     List(activeProjects) { project in
                         ProjectRow(project: project)
                             .projectSwipeActions(project)
+                            .listSectionSeparator(.hidden)
                     }
                     .listStyle(.plain)
                 }

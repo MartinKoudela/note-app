@@ -34,8 +34,11 @@ struct RemindersView: View {
                     }
                 } else {
                     List(reminders) { item in
-                        TaskRow(item: item)
-                            .taskSwipeActions(item)
+                        NavigationLink(value: item) {
+                            TaskRow(item: item)
+                        }
+                        .taskSwipeActions(item)
+                        .listSectionSeparator(.hidden)
                     }
                     .listStyle(.plain)
                 }
@@ -43,6 +46,9 @@ struct RemindersView: View {
             .navigationTitle(AppTab.reminders.title)
             .appToolbar(primary: .reminder)
             .sheet(item: $activeAdd) { AddSheet(action: $0) }
+            .navigationDestination(for: TaskItem.self) { item in
+                TaskDetailView(item: item)
+            }
         }
     }
 }

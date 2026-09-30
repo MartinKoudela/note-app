@@ -8,7 +8,7 @@ struct TodayView: View {
     private var activeItems: [TaskItem] {
         items.filter { $0.deletedAt == nil && !$0.isArchived }
     }
-
+    
     private var todayItems: [TaskItem] {
         activeItems.filter { Calendar.current.isDateInToday($0.dueDate ?? .distantPast) }
     }
@@ -55,8 +55,11 @@ struct TodayView: View {
                                 .foregroundStyle(.secondary)
                         } else {
                             List(todayItems) { item in
-                                TaskRow(item: item)
-                                    .taskSwipeActions(item)
+                                NavigationLink(value: item) {
+                                    TaskRow(item: item)
+                                }
+                                .taskSwipeActions(item)
+                                .listSectionSeparator(.hidden)
                             }
                             .listStyle(.plain)
                         }
@@ -69,6 +72,9 @@ struct TodayView: View {
             .navigationSubtitle(Date.now.formatted(.dateTime.day().month(.wide)))
             .appToolbar(primary: .todayTask)
             .sheet(item: $activeAdd) { AddSheet(action: $0) }
+            .navigationDestination(for: TaskItem.self) { item in
+                TaskDetailView(item: item)
+            }
         }
     }
 }
