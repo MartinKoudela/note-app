@@ -2,14 +2,21 @@ import SwiftUI
 import SwiftData
 
 @main struct NoteApp: App {
+    private let container: ModelContainer
+
     init() {
-        NotificationService.configure()
+        do {
+            container = try ModelContainer(for: Project.self, TaskItem.self)
+        } catch {
+            fatalError("Failed to create ModelContainer: \(error)")
+        }
+        NotificationService.configure(container: container)
     }
 
     var body: some Scene {
         WindowGroup {
             RootTabView()
         }
-        .modelContainer(for: [Project.self, TaskItem.self])
+        .modelContainer(container)
     }
 }

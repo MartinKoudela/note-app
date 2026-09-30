@@ -19,7 +19,7 @@ struct ProjectRow: View {
                 Text(project.name)
 
                 if let deadline = project.deadline {
-                    Text(deadline.formatted(.dateTime.day().month()))
+                    Text(deadline.dayMonth)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }

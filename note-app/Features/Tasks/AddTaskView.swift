@@ -17,6 +17,7 @@ struct AddTaskView: View {
     @State private var priority = Priority.none
     @State private var hasReminder: Bool
     @State private var reminderHasSound = true
+    @State private var repeatRule: RepeatRule?
     
     @AppStorage(ReminderDefaults.timeKey) private var defaultReminderMinutes = ReminderDefaults.defaultMinutes
 
@@ -45,11 +46,18 @@ struct AddTaskView: View {
                         if hasDueTime {
                             DatePicker("Time", selection: $date, displayedComponents: .hourAndMinute)
                         }
+                        
+                        NavigationLink {
+                            RepeatPickerView(rule: $repeatRule)
+                        } label: {
+                            LabeledContent("Repeat", value: repeatRule?.summary ?? "Never")
+                        }
                     }
 
                     Toggle("Remind me", isOn: $hasReminder.animation())
                     if hasReminder {
                         Toggle("Sound", isOn: $reminderHasSound)
+                        NotificationPermissionNotice()
                     }
                 }
 
@@ -95,6 +103,7 @@ struct AddTaskView: View {
                 if !on {
                     hasDueTime = false
                     hasReminder = false
+                    repeatRule = nil
                 }
             }
             .toolbar {
@@ -140,6 +149,7 @@ struct AddTaskView: View {
         )
         item.notes = notes
         item.reminderHasSound = reminderHasSound
+        item.repeatRule = hasDate ? repeatRule : nil
         modelContext.insert(item)
         NotificationService.update(for: item)
         dismiss()

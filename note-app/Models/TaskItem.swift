@@ -38,6 +38,8 @@ final class TaskItem {
     // var sortOrder: Int = 0
     var isArchived: Bool = false
     var deletedAt: Date?
+    var repeatRule: RepeatRule?
+    var nextOccurrenceID: String?
     
     init(title: String, project: Project? = nil, dueDate: Date? = nil, hasDueTime: Bool =
          false, priority: Priority = .none, hasReminder: Bool = false) {

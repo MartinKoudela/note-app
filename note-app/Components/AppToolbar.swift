@@ -35,6 +35,7 @@ struct AppToolbar: ViewModifier {
                         
                         Divider()
                         
+                        menuButton(.completed)
                         menuButton(.archive)
                         menuButton(.bin)
 

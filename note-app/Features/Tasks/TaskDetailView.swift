@@ -8,6 +8,8 @@ struct TaskDetailView: View {
 
     @Query(sort: \Project.name) private var projects: [Project]
     
+    @State private var originalTitle = ""
+    
     @AppStorage(ReminderDefaults.timeKey) private var defaultReminderMinutes = ReminderDefaults.defaultMinutes
     
     private var reminderState: String {
@@ -26,6 +28,7 @@ struct TaskDetailView: View {
             if !on {
                 item.hasDueTime = false
                 item.hasReminder = false
+                item.repeatRule = nil
             }
         }
     }
@@ -55,11 +58,18 @@ struct TaskDetailView: View {
                     if item.hasDueTime {
                         DatePicker("Time", selection: date, displayedComponents: .hourAndMinute)
                     }
+                    
+                    NavigationLink {
+                        RepeatPickerView(rule: $item.repeatRule)
+                    } label: {
+                        LabeledContent("Repeat", value: item.repeatRule?.summary ?? "Never")
+                    }
                 }
 
                 Toggle("Remind me", isOn: $item.hasReminder.animation())
                 if item.hasReminder {
                     Toggle("Sound", isOn: $item.reminderHasSound)
+                    NotificationPermissionNotice()
                 }
             }
 
@@ -102,8 +112,16 @@ struct TaskDetailView: View {
         }
         .navigationTitle("Details")
         .navigationBarTitleDisplayMode(.inline)
-        .onChange(of: item.isCompleted) { _, done in
-            item.completedAt = done ? .now : nil
+        .onAppear {
+            originalTitle = item.title
+        }
+        .onDisappear {
+            if item.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                item.title = originalTitle.isEmpty ? "Untitled" : originalTitle
+            }
+        }
+        .onChange(of: item.isCompleted) {
+            TaskCompletion.didChange(item)
         }
         .onChange(of: item.hasDueTime) { _, on in
             if on {

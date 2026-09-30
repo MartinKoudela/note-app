@@ -41,9 +41,8 @@ struct TaskRow: View {
                     .foregroundStyle(item.isOverdue ? .red : .secondary)
             }
         }
-        .onChange(of: item.isCompleted) { _, done in
-            item.completedAt = done ? .now : nil
-            NotificationService.update(for: item)
+        .onChange(of: item.isCompleted) {
+            TaskCompletion.didChange(item)
         }
     }
 
@@ -66,8 +65,13 @@ struct TaskRow: View {
                 } else if item.hasDueTime {
                     Text(date.formatted(date: .omitted, time: .shortened))
                 } else {
-                    Text(date.formatted(.dateTime.day().month()))
+                    Text(date.dayMonth)
                 }
+            }
+            
+            if item.repeatRule != nil {
+                Image(systemName: "repeat")
+                    .accessibilityLabel("Repeats")
             }
             
             if item.hasReminder {

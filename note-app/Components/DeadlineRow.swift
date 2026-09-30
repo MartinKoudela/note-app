@@ -15,7 +15,7 @@ struct DeadlineRow: View {
         switch days {
         case 0: return "Today"
         case 1: return "Tomorrow"
-        default: return "\(deadline.formatted(.dateTime.weekday(.wide))) • \(days) days"
+        default: return "\(deadline.weekdayName) • \(days) days"
         }
     }
 

@@ -9,6 +9,7 @@ struct TodayView: View {
     @State private var activeAdd: AddAction?
     @State private var showCompleted = false
     @State private var now = Date.now
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("isTomorrowExpanded") private var isTomorrowExpanded = false
 
     private var relevantItems: [TaskItem] {
@@ -193,12 +194,22 @@ struct TodayView: View {
                     .animation(.default, value: showCompleted)
                 }
             }
-            .navigationTitle(Date.now.formatted(.dateTime.weekday(.wide)).capitalized)
-            .navigationSubtitle(Date.now.formatted(.dateTime.day().month(.wide)))
+            .navigationTitle(now.weekdayName)
+            .navigationSubtitle(now.dayMonthWide)
             .appToolbar(primary: .todayTask)
             .sheet(item: $activeAdd) { AddSheet(action: $0) }
             .navigationDestination(for: TaskItem.self) { item in
                 TaskDetailView(item: item)
+            }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active {
+                    now = .now
+                }
+            }
+            .task {
+                for await _ in NotificationCenter.default.notifications(named: .NSCalendarDayChanged) {
+                    now = .now
+                }
             }
             .task(id: completedTodayCount) {
                 now = .now

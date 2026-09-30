@@ -25,6 +25,7 @@ enum AppTab: Hashable {
 
 struct RootTabView: View {
     @State private var selection: AppTab = .today
+    @State private var router = NotificationRouter.shared
     
     var body: some View {
         TabView(selection: $selection) {
@@ -39,11 +40,22 @@ struct RootTabView: View {
             }
             Tab(value: .search, role: .search) {
                 SearchView()
-                
             }
         }
         .tabBarMinimizeBehavior(.onScrollDown)
         .tabViewSearchActivation(.searchTabSelection)
+        .sheet(item: $router.taskToOpen) { item in
+            NavigationStack {
+                TaskDetailView(item: item)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(role: .close) {
+                                router.taskToOpen = nil
+                            }
+                        }
+                    }
+            }
+        }
     }
 }
 

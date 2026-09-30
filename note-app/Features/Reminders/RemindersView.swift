@@ -35,6 +35,7 @@ struct RemindersView: View {
 
     @State private var activeAdd: AddAction?
     @State private var now = Date.now
+    @Environment(\.scenePhase) private var scenePhase
 
     private var relevantItems: [TaskItem] {
         items.filter { $0.isActive && $0.isOpenOrDoneToday }
@@ -91,6 +92,16 @@ struct RemindersView: View {
             .sheet(item: $activeAdd) { AddSheet(action: $0) }
             .navigationDestination(for: TaskItem.self) { item in
                 TaskDetailView(item: item)
+            }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active {
+                    now = .now
+                }
+            }
+            .task {
+                for await _ in NotificationCenter.default.notifications(named: .NSCalendarDayChanged) {
+                    now = .now
+                }
             }
             .task(id: completedCount) {
                 now = .now

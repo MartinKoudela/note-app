@@ -20,6 +20,7 @@ struct SettingsView: View {
             Form {
                 Section {
                     DatePicker("Default Reminder Time", selection: defaultReminderTime, displayedComponents: .hourAndMinute)
+                    NotificationPermissionNotice()
                 } header: {
                     Text("Notifications")
                 } footer: {

@@ -1,17 +1,96 @@
 import SwiftUI
+import SwiftData
 
 struct SearchView: View {
+
+    @Query(sort: \TaskItem.createdAt, order: .reverse) private var items: [TaskItem]
+    @Query(sort: \Project.name) private var projects: [Project]
+
     @State private var query = ""
-    
+
+    private var trimmedQuery: String {
+        query.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var matchingProjects: [Project] {
+        guard !trimmedQuery.isEmpty else { return [] }
+        return projects.filter { project in
+            project.deletedAt == nil &&
+            (project.name.localizedStandardContains(trimmedQuery) || project.notes.localizedStandardContains(trimmedQuery))
+        }
+    }
+
+    private var matchingItems: [TaskItem] {
+        guard !trimmedQuery.isEmpty else { return [] }
+        return items.filter { item in
+            item.deletedAt == nil &&
+            item.project?.deletedAt == nil &&
+            (item.title.localizedStandardContains(trimmedQuery) || item.notes.localizedStandardContains(trimmedQuery))
+        }
+    }
+
+    private var openItems: [TaskItem] {
+        matchingItems.filter { !$0.isCompleted }
+    }
+
+    private var completedItems: [TaskItem] {
+        matchingItems.filter(\.isCompleted)
+    }
+
     var body: some View {
         NavigationStack {
-            Text("Search")
-                .navigationTitle(AppTab.search.title)
-                .searchable(text: $query)
+            Group {
+                if trimmedQuery.isEmpty {
+                    ContentUnavailableView(
+                        "Search Backlog",
+                        systemImage: AppTab.search.systemImage,
+                        description: Text("Find tasks, notes and projects.")
+                    )
+                } else if matchingProjects.isEmpty && matchingItems.isEmpty {
+                    ContentUnavailableView.search(text: trimmedQuery)
+                } else {
+                    List {
+                        if !matchingProjects.isEmpty {
+                            Section("Projects") {
+                                ForEach(matchingProjects) { project in
+                                    ProjectRow(project: project)
+                                        .listSectionSeparator(.hidden)
+                                }
+                            }
+                            .headerProminence(.increased)
+                        }
+
+                        if !openItems.isEmpty {
+                            Section("Tasks") {
+                                ForEach(openItems) { item in
+                                    TaskListRow(item: item)
+                                }
+                            }
+                            .headerProminence(.increased)
+                        }
+
+                        if !completedItems.isEmpty {
+                            Section("Completed") {
+                                ForEach(completedItems) { item in
+                                    TaskListRow(item: item)
+                                }
+                            }
+                            .headerProminence(.increased)
+                        }
+                    }
+                    .listStyle(.plain)
+                }
+            }
+            .navigationTitle(AppTab.search.title)
+            .searchable(text: $query, prompt: "Tasks, notes and projects")
+            .navigationDestination(for: TaskItem.self) { item in
+                TaskDetailView(item: item)
+            }
         }
     }
 }
 
 #Preview {
     SearchView()
+        .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
 }

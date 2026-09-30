@@ -4,7 +4,7 @@ extension TaskItem {
     static let completedGracePeriod: TimeInterval = 3
 
     var isActive: Bool {
-        deletedAt == nil && !isArchived && project?.deletedAt == nil
+        deletedAt == nil && !isArchived && project?.deletedAt == nil && project?.isArchived != true
     }
 
     var isOpenOrDoneToday: Bool {
