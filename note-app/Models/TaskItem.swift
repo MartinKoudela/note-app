@@ -34,6 +34,8 @@ final class TaskItem {
     // var subtasks:
     // var url: String = https://
     // var sortOrder: Int = 0
+    var isArchived: Bool = false
+    var deletedAt: Date?
     
     init(title: String, project: Project? = nil, dueDate: Date? = nil, hasDueTime: Bool =
          false, priority: Priority = .none, hasReminder: Bool = false) {

@@ -3,8 +3,8 @@ import SwiftUI
 struct AppToolbar: ViewModifier {
     let primary: AddAction
     
-    @State private var showSettings = false
     @State private var activeAdd: AddAction?
+    @State private var destination: MoreDestination?
     
     func body(content: Content) -> some View {
         content
@@ -28,18 +28,34 @@ struct AppToolbar: ViewModifier {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu("More", systemImage: "ellipsis") {
-                        Button("Settings", systemImage: "gear") {
-                            showSettings = true
+                        
+                        Button("Select", systemImage: "checkmark.circle") {
+                            print("Select")
                         }
+                        
+                        Divider()
+                        
+                        menuButton(.archive)
+                        menuButton(.bin)
+
+                        Divider()
+
+                        menuButton(.settings)
                     }
                 }
             }
             .sheet(item: $activeAdd) { action in
                 AddSheet(action: action)
             }
-            .sheet(isPresented: $showSettings) {
-                SettingsView()
+            .sheet(item: $destination) { destination in
+                destination.view
             }
+    }
+
+    private func menuButton(_ item: MoreDestination) -> some View {
+        Button(item.title, systemImage: item.systemImage) {
+            destination = item
+        }
     }
 }
 

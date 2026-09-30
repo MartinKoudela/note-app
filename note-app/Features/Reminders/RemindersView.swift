@@ -5,14 +5,18 @@ import SwiftData
 struct RemindersView: View {
     
     @Query(sort: \TaskItem.createdAt) private var items: [TaskItem]
-
+    
     private var reminderCount: Int {
         reminders.count
     }
     
+    private var activeItems: [TaskItem] {
+        items.filter { $0.deletedAt == nil && !$0.isArchived }
+    }
+
     private var reminders: [TaskItem] {
-          items.filter(\.hasReminder)
-      }
+        activeItems.filter(\.hasReminder)
+    }
     
     @State private var activeAdd: AddAction?
     
@@ -31,6 +35,7 @@ struct RemindersView: View {
                 } else {
                     List(reminders) { item in
                         TaskRow(item: item)
+                            .taskSwipeActions(item)
                     }
                     .listStyle(.plain)
                 }
@@ -45,5 +50,5 @@ struct RemindersView: View {
 #Preview {
     RemindersView()
         .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
-
+    
 }

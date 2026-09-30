@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		484ACAAE306B1F57003C3C20 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 484ACAAD306B1F57003C3C20 /* AppIcon.icon */; };
 		4851C3163066941500ABDC99 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 4851C3133066941500ABDC99 /* .gitignore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* note-app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "note-app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		484ACAAD306B1F57003C3C20 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		4851C3133066941500ABDC99 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -36,6 +38,7 @@
 			isa = PBXGroup;
 			children = (
 				4851C3133066941500ABDC99 /* .gitignore */,
+				484ACAAD306B1F57003C3C20 /* AppIcon.icon */,
 				484B4299306691DF00215625 /* note-app */,
 				000000000000000000000020 /* Products */,
 			);
@@ -108,6 +111,7 @@
 		000000000000000140000000 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				484ACAAE306B1F57003C3C20 /* AppIcon.icon in Resources */,
 				4851C3163066941500ABDC99 /* .gitignore in Resources */,
 			);
 		};
@@ -257,6 +261,7 @@
 		000000000000000111000000 /* Debug configuration for PBXNativeTarget "note-app" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BKM9R98Z5Z;
@@ -299,6 +304,7 @@
 		000000000000000112000000 /* Release configuration for PBXNativeTarget "note-app" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BKM9R98Z5Z;

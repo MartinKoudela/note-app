@@ -27,6 +27,7 @@ final class Project {
     var notes: String = ""
     var createdAt: Date = Date.now
     var isArchived: Bool = false
+    var deletedAt: Date?
     var sortOrder: Int = 0
     
     @Relationship(deleteRule: .cascade, inverse: \TaskItem.project)

@@ -5,8 +5,12 @@ struct TodayView: View {
     
     @Query(sort: \TaskItem.createdAt) private var items: [TaskItem]
     
+    private var activeItems: [TaskItem] {
+        items.filter { $0.deletedAt == nil && !$0.isArchived }
+    }
+
     private var todayItems: [TaskItem] {
-        items.filter { Calendar.current.isDateInToday($0.dueDate ?? .distantPast) }
+        activeItems.filter { Calendar.current.isDateInToday($0.dueDate ?? .distantPast) }
     }
     
     private var taskCount: Int {
@@ -35,7 +39,7 @@ struct TodayView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         HStack(spacing: 12) {
                             ProgressView(value: Double(completedCount), total: Double(taskCount))
-
+                            
                             Text("\(completedCount) of \(taskCount) done")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
@@ -52,6 +56,7 @@ struct TodayView: View {
                         } else {
                             List(todayItems) { item in
                                 TaskRow(item: item)
+                                    .taskSwipeActions(item)
                             }
                             .listStyle(.plain)
                         }

@@ -5,8 +5,12 @@ struct ProjectsView: View {
     
     @Query(sort: \Project.sortOrder) private var projects: [Project]
     
+    private var activeProjects: [Project] {
+        projects.filter { $0.deletedAt == nil && !$0.isArchived }
+    }
+
     private var projectCount: Int {
-        projects.count
+        activeProjects.count
     }
     
     @State private var activeAdd: AddAction?
@@ -24,8 +28,9 @@ struct ProjectsView: View {
                             .buttonStyle(.glassProminent)
                     }
                 } else {
-                    List(projects) { project in
+                    List(activeProjects) { project in
                         ProjectRow(project: project)
+                            .projectSwipeActions(project)
                     }
                     .listStyle(.plain)
                 }
