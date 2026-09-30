@@ -5,6 +5,7 @@ struct SearchView: View {
 
     @Query(sort: \TaskItem.createdAt, order: .reverse) private var items: [TaskItem]
     @Query(sort: \Project.name) private var projects: [Project]
+    @Query(sort: \Page.updatedAt, order: .reverse) private var pages: [Page]
 
     @State private var query = ""
 
@@ -29,6 +30,14 @@ struct SearchView: View {
         }
     }
 
+    private var matchingPages: [Page] {
+        guard !trimmedQuery.isEmpty else { return [] }
+        return pages.filter { page in
+            page.isVisible &&
+            (page.title.localizedStandardContains(trimmedQuery) || page.content.localizedStandardContains(trimmedQuery))
+        }
+    }
+
     private var openItems: [TaskItem] {
         matchingItems.filter { !$0.isCompleted }
     }
@@ -44,17 +53,31 @@ struct SearchView: View {
                     ContentUnavailableView(
                         "Search Backlog",
                         systemImage: AppTab.search.systemImage,
-                        description: Text("Find tasks, notes and projects.")
+                        description: Text("Find tasks, pages, notes and projects.")
                     )
-                } else if matchingProjects.isEmpty && matchingItems.isEmpty {
+                } else if matchingProjects.isEmpty && matchingPages.isEmpty && matchingItems.isEmpty {
                     ContentUnavailableView.search(text: trimmedQuery)
                 } else {
                     List {
                         if !matchingProjects.isEmpty {
                             Section("Projects") {
                                 ForEach(matchingProjects) { project in
-                                    ProjectRow(project: project)
-                                        .listSectionSeparator(.hidden)
+                                    NavigationLink(value: project) {
+                                        ProjectRow(project: project)
+                                    }
+                                    .listSectionSeparator(.hidden)
+                                }
+                            }
+                            .headerProminence(.increased)
+                        }
+
+                        if !matchingPages.isEmpty {
+                            Section("Pages") {
+                                ForEach(matchingPages) { page in
+                                    NavigationLink(value: page) {
+                                        PageRow(page: page, showsProject: true)
+                                    }
+                                    .listSectionSeparator(.hidden)
                                 }
                             }
                             .headerProminence(.increased)
@@ -82,9 +105,15 @@ struct SearchView: View {
                 }
             }
             .navigationTitle(AppTab.search.title)
-            .searchable(text: $query, prompt: "Tasks, notes and projects")
+            .searchable(text: $query, prompt: "Tasks, pages and projects")
             .navigationDestination(for: TaskItem.self) { item in
                 TaskDetailView(item: item)
+            }
+            .navigationDestination(for: Project.self) { project in
+                ProjectDetailView(project: project)
+            }
+            .navigationDestination(for: Page.self) { page in
+                PageView(page: page)
             }
         }
     }
@@ -92,5 +121,5 @@ struct SearchView: View {
 
 #Preview {
     SearchView()
-        .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
+        .modelContainer(for: [Project.self, TaskItem.self, Page.self], inMemory: true)
 }

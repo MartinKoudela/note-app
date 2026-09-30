@@ -4,32 +4,46 @@ struct ProjectRow: View {
     let project: Project
 
     private var openCount: Int {
-        project.tasks.filter { !$0.isCompleted }.count
+        project.openTasks.count
+    }
+
+    private var pageCount: Int {
+        project.pages.filter { $0.deletedAt == nil }.count
+    }
+
+    private var details: String {
+        var parts: [String] = []
+        if let deadline = project.deadline {
+            parts.append("Due \(deadline.dayMonth)")
+        }
+        if pageCount > 0 {
+            parts.append(pageCount == 1 ? "1 page" : "\(pageCount) pages")
+        }
+        return parts.joined(separator: " · ")
     }
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: project.icon)
-                .font(.body)
-                .foregroundStyle(.white)
-                .frame(width: 32, height: 32)
-                .background(project.color.color, in: .circle)
+            ProjectIcon(icon: project.icon, color: project.color, size: 32)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(project.name)
 
-                if let deadline = project.deadline {
-                    Text(deadline.dayMonth)
+                if !details.isEmpty {
+                    Text(details)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .monospacedDigit()
                 }
             }
 
             Spacer()
 
-            Text("\(openCount)")
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
+            if openCount > 0 {
+                Text("\(openCount)")
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
         }
     }
 }

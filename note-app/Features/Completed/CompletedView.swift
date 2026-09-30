@@ -72,5 +72,5 @@ struct CompletedView: View {
 
 #Preview {
     CompletedView()
-        .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
+        .modelContainer(for: [Project.self, TaskItem.self, Page.self], inMemory: true)
 }

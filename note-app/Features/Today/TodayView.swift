@@ -9,6 +9,8 @@ struct TodayView: View {
     @State private var activeAdd: AddAction?
     @State private var showCompleted = false
     @State private var now = Date.now
+    @State private var isSelecting = false
+    @State private var selection = Set<PersistentIdentifier>()
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("isTomorrowExpanded") private var isTomorrowExpanded = false
 
@@ -73,6 +75,10 @@ struct TodayView: View {
         relevantItems.filter(\.isCompleted).count
     }
 
+    private var selectableItems: [TaskItem] {
+        overdueItems + todayItems + (isTomorrowExpanded ? tomorrowItems : [])
+    }
+    
     private var progressItems: [TaskItem] {
         overdueAll + todayAll
     }
@@ -102,7 +108,7 @@ struct TodayView: View {
                             .buttonStyle(.glassProminent)
                     }
                 } else {
-                    List {
+                    List(selection: $selection) {
                         if taskCount > 0 {
                             progressSection
                         }
@@ -149,6 +155,7 @@ struct TodayView: View {
                             Section("Deadlines") {
                                 ForEach(deadlineProjects) { project in
                                     DeadlineRow(project: project)
+                                        .selectionDisabled()
                                 }
                             }
                             .headerProminence(.increased)
@@ -178,6 +185,7 @@ struct TodayView: View {
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityValue(isTomorrowExpanded ? "Expanded" : "Collapsed")
+                                .selectionDisabled()
                                 .listRowSeparator(.hidden)
                                 .listSectionSeparator(.hidden)
                                 
@@ -196,7 +204,10 @@ struct TodayView: View {
             }
             .navigationTitle(now.weekdayName)
             .navigationSubtitle(now.dayMonthWide)
-            .appToolbar(primary: .todayTask)
+            .appToolbar(primary: .todayTask, isSelecting: isSelecting) {
+                isSelecting = true
+            }
+            .taskSelection(isSelecting: $isSelecting, selection: $selection, items: selectableItems)
             .sheet(item: $activeAdd) { AddSheet(action: $0) }
             .navigationDestination(for: TaskItem.self) { item in
                 TaskDetailView(item: item)
@@ -233,6 +244,7 @@ struct TodayView: View {
             .animation(.spring(duration: 0.4, bounce: 0.2), value: completedCount)
             .animation(.spring(duration: 0.4, bounce: 0.2), value: taskCount)
             .accessibilityElement(children: .combine)
+            .selectionDisabled()
             .listRowSeparator(.hidden)
             .listSectionSeparator(.hidden)
 
@@ -249,6 +261,7 @@ struct TodayView: View {
                     .buttonStyle(.borderless)
                     .font(.subheadline)
                 }
+                .selectionDisabled()
                 .listRowSeparator(.hidden)
             }
         }
@@ -257,5 +270,5 @@ struct TodayView: View {
 
 #Preview {
     TodayView()
-        .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
+        .modelContainer(for: [Project.self, TaskItem.self, Page.self], inMemory: true)
 }

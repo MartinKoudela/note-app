@@ -35,6 +35,8 @@ struct RemindersView: View {
 
     @State private var activeAdd: AddAction?
     @State private var now = Date.now
+    @State private var isSelecting = false
+    @State private var selection = Set<PersistentIdentifier>()
     @Environment(\.scenePhase) private var scenePhase
 
     private var relevantItems: [TaskItem] {
@@ -70,7 +72,7 @@ struct RemindersView: View {
                             .buttonStyle(.glassProminent)
                     }
                 } else {
-                    List {
+                    List(selection: $selection) {
                         ForEach(sections, id: \.section) { group in
                             Section {
                                 ForEach(group.items) { item in
@@ -88,7 +90,10 @@ struct RemindersView: View {
                 }
             }
             .navigationTitle(AppTab.reminders.title)
-            .appToolbar(primary: .reminder)
+            .appToolbar(primary: .reminder, isSelecting: isSelecting) {
+                isSelecting = true
+            }
+            .taskSelection(isSelecting: $isSelecting, selection: $selection, items: visibleItems)
             .sheet(item: $activeAdd) { AddSheet(action: $0) }
             .navigationDestination(for: TaskItem.self) { item in
                 TaskDetailView(item: item)
@@ -114,5 +119,5 @@ struct RemindersView: View {
 
 #Preview {
     RemindersView()
-        .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
+        .modelContainer(for: [Project.self, TaskItem.self, Page.self], inMemory: true)
 }

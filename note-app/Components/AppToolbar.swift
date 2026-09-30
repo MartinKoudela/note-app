@@ -2,46 +2,53 @@ import SwiftUI
 
 struct AppToolbar: ViewModifier {
     let primary: AddAction
-    
+    var isSelecting = false
+    var onSelect: (() -> Void)?
+
     @State private var activeAdd: AddAction?
     @State private var destination: MoreDestination?
-    
+
     func body(content: Content) -> some View {
         content
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button("New Task", systemImage: "checklist") {
-                            activeAdd = .task
+                if !isSelecting {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu {
+                            Button("New Task", systemImage: "checklist") {
+                                activeAdd = .task
+                            }
+                            Button("New Project", systemImage: "folder.badge.plus") {
+                                activeAdd = .project
+                            }
+                        } label: {
+                            Label("Add", systemImage: "plus")
+                        } primaryAction: {
+                            activeAdd = primary
                         }
-                        Button("New Project", systemImage: "folder.badge.plus") {
-                            activeAdd = .project
-                        }
-                    } label: {
-                        Label("Add", systemImage: "plus")
-                    } primaryAction: {
-                        activeAdd = primary
                     }
-                }
-                
-                ToolbarSpacer(.fixed, placement: .topBarTrailing)
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu("More", systemImage: "ellipsis") {
-                        
-                        Button("Select", systemImage: "checkmark.circle") {
-                            print("Select")
+
+                    ToolbarSpacer(.fixed, placement: .topBarTrailing)
+
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu("More", systemImage: "ellipsis") {
+                            if let onSelect {
+                                Button("Select", systemImage: "checkmark.circle") {
+                                    withAnimation(.snappy) {
+                                        onSelect()
+                                    }
+                                }
+
+                                Divider()
+                            }
+
+                            menuButton(.completed)
+                            menuButton(.archive)
+                            menuButton(.bin)
+
+                            Divider()
+
+                            menuButton(.settings)
                         }
-                        
-                        Divider()
-                        
-                        menuButton(.completed)
-                        menuButton(.archive)
-                        menuButton(.bin)
-
-                        Divider()
-
-                        menuButton(.settings)
                     }
                 }
             }
@@ -61,7 +68,7 @@ struct AppToolbar: ViewModifier {
 }
 
 extension View {
-    func appToolbar(primary: AddAction) -> some View {
-        modifier(AppToolbar(primary: primary))
+    func appToolbar(primary: AddAction, isSelecting: Bool = false, onSelect: (() -> Void)? = nil) -> some View {
+        modifier(AppToolbar(primary: primary, isSelecting: isSelecting, onSelect: onSelect))
     }
 }

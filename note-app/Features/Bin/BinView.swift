@@ -8,6 +8,7 @@ struct BinView: View {
 
     @Query(sort: \Project.name) private var projects: [Project]
     @Query(sort: \TaskItem.createdAt, order: .reverse) private var items: [TaskItem]
+    @Query(sort: \Page.updatedAt, order: .reverse) private var pages: [Page]
 
     @State private var showEmptyConfirmation = false
 
@@ -19,8 +20,16 @@ struct BinView: View {
         items.filter { $0.deletedAt != nil && $0.project?.deletedAt == nil }
     }
 
+    private var deletedPages: [Page] {
+        pages.filter { page in
+            page.deletedAt != nil &&
+            page.parent?.deletedAt == nil &&
+            page.project?.deletedAt == nil
+        }
+    }
+
     private var isEmpty: Bool {
-        deletedProjects.isEmpty && deletedItems.isEmpty
+        deletedProjects.isEmpty && deletedItems.isEmpty && deletedPages.isEmpty
     }
 
     var body: some View {
@@ -30,7 +39,7 @@ struct BinView: View {
                     ContentUnavailableView(
                         "Bin Is Empty",
                         systemImage: MoreDestination.bin.systemImage,
-                        description: Text("Deleted projects and tasks will appear here.")
+                        description: Text("Deleted projects, pages and tasks will appear here.")
                     )
                 } else {
                     List {
@@ -38,6 +47,14 @@ struct BinView: View {
                             Section("Projects") {
                                 ForEach(deletedProjects) { project in
                                     DeletedProject(project: project)
+                                }
+                            }
+                        }
+
+                        if !deletedPages.isEmpty {
+                            Section("Pages") {
+                                ForEach(deletedPages) { page in
+                                    DeletedPage(page: page)
                                 }
                             }
                         }
@@ -83,10 +100,13 @@ struct BinView: View {
             NotificationService.cancel(for: item)
             modelContext.delete(item)
         }
+        for page in deletedPages {
+            modelContext.delete(page)
+        }
     }
 }
 
 #Preview {
     BinView()
-        .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
+        .modelContainer(for: [Project.self, TaskItem.self, Page.self], inMemory: true)
 }

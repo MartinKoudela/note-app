@@ -4,6 +4,12 @@ struct TaskRow: View {
     @Bindable var item: TaskItem
     var showsProject = true
     
+    @Environment(\.editMode) private var editMode
+    
+    private var isSelecting: Bool {
+        editMode?.wrappedValue.isEditing == true
+    }
+    
     private var notesPreview: String {
         item.notes
             .split(whereSeparator: \.isNewline)
@@ -14,9 +20,11 @@ struct TaskRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Toggle("Done", isOn: $item.isCompleted)
-                .toggleStyle(CircleCheckStyle(tint: item.project?.color.color ?? .accentColor))
-                .labelsHidden()
+            if !isSelecting {
+                Toggle("Done", isOn: $item.isCompleted)
+                    .toggleStyle(CircleCheckStyle(tint: item.project?.color.color ?? .accentColor))
+                    .labelsHidden()
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 2) {

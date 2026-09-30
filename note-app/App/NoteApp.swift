@@ -6,7 +6,7 @@ import SwiftData
 
     init() {
         do {
-            container = try ModelContainer(for: Project.self, TaskItem.self)
+            container = try ModelContainer(for: Project.self, TaskItem.self, Page.self)
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }

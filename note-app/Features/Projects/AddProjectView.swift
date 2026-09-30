@@ -15,14 +15,6 @@ struct AddProjectView: View {
     @State private var hasDeadline: Bool
     @State private var deadline: Date
 
-    private let icons = [
-        "folder", "briefcase", "book", "graduationcap",
-        "house", "cart", "heart", "star",
-        "flag", "paintbrush", "hammer", "laptopcomputer"
-    ]
-
-    private let columns = [GridItem(.adaptive(minimum: 44))]
-
     init(deadline: Date? = nil) {
         _hasDeadline = State(initialValue: deadline != nil)
         _deadline = State(initialValue: deadline ?? .now)
@@ -32,14 +24,9 @@ struct AddProjectView: View {
         NavigationStack {
             Form {
                 Section {
-                    Image(systemName: icon)
-                        .font(.largeTitle)
-                        .foregroundStyle(.white)
-                        .frame(width: 80, height: 80)
-                        .background(color.color, in: .circle)
+                    ProjectIcon(icon: icon, color: color, size: 80)
                         .frame(maxWidth: .infinity)
                         .listRowBackground(Color.clear)
-                        .accessibilityHidden(true)
                 }
 
                 Section {
@@ -49,47 +36,11 @@ struct AddProjectView: View {
                 }
 
                 Section("Color") {
-                    LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach(ProjectColor.allCases, id: \.self) { option in
-                            Button {
-                                color = option
-                            } label: {
-                                Circle()
-                                    .fill(option.color)
-                                    .frame(width: 32, height: 32)
-                                    .padding(4)
-                                    .overlay {
-                                        if option == color {
-                                            Circle().stroke(.secondary, lineWidth: 2)
-                                        }
-                                    }
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(option.rawValue.capitalized)
-                            .accessibilityAddTraits(option == color ? .isSelected : [])
-                        }
-                    }
-                    .padding(.vertical, 4)
+                    ProjectColorPicker(selection: $color)
                 }
 
                 Section("Icon") {
-                    LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach(icons, id: \.self) { option in
-                            Button {
-                                icon = option
-                            } label: {
-                                Image(systemName: option)
-                                    .font(.title3)
-                                    .frame(width: 40, height: 40)
-                                    .foregroundStyle(option == icon ? .white : .primary)
-                                    .background(option == icon ? color.color : Color.secondary.opacity(0.15), in: .circle)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(option)
-                            .accessibilityAddTraits(option == icon ? .isSelected : [])
-                        }
-                    }
-                    .padding(.vertical, 4)
+                    ProjectIconPicker(selection: $icon, color: color)
                 }
 
                 Section {
@@ -131,5 +82,5 @@ struct AddProjectView: View {
 
 #Preview {
     AddProjectView()
-        .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
+        .modelContainer(for: [Project.self, TaskItem.self, Page.self], inMemory: true)
 }
