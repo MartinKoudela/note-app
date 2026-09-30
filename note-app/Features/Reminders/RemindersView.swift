@@ -1,46 +1,89 @@
 import SwiftUI
 import SwiftData
 
-
 struct RemindersView: View {
-    
-    @Query(sort: \TaskItem.createdAt) private var items: [TaskItem]
-    
-    private var reminderCount: Int {
-        reminders.count
-    }
-    
-    private var activeItems: [TaskItem] {
-        items.filter { $0.deletedAt == nil && !$0.isArchived }
+
+    private enum TimelineSection: CaseIterable {
+        case overdue, today, tomorrow, nextWeek, later, noDate
+
+        var title: String {
+            switch self {
+            case .overdue: "Overdue"
+            case .today: "Today"
+            case .tomorrow: "Tomorrow"
+            case .nextWeek: "Next 7 Days"
+            case .later: "Later"
+            case .noDate: "No Date"
+            }
+        }
+
+        static func of(_ item: TaskItem) -> TimelineSection {
+            guard let dueDate = item.dueDate else { return .noDate }
+            let calendar = Calendar.current
+            let startOfToday = calendar.startOfDay(for: .now)
+            let weekLimit = calendar.date(byAdding: .day, value: 8, to: startOfToday) ?? startOfToday
+
+            if dueDate < startOfToday { return .overdue }
+            if calendar.isDateInToday(dueDate) { return .today }
+            if calendar.isDateInTomorrow(dueDate) { return .tomorrow }
+            if dueDate < weekLimit { return .nextWeek }
+            return .later
+        }
     }
 
-    private var reminders: [TaskItem] {
-        activeItems.filter(\.hasReminder)
-    }
-    
+    @Query(sort: \TaskItem.createdAt) private var items: [TaskItem]
+
     @State private var activeAdd: AddAction?
-    
+    @State private var now = Date.now
+
+    private var relevantItems: [TaskItem] {
+        items.filter { $0.isActive && $0.isOpenOrDoneToday }
+    }
+
+    private var visibleItems: [TaskItem] {
+        relevantItems.filter { $0.isVisible(at: now) }.sortedByDue()
+    }
+
+    private var sections: [(section: TimelineSection, items: [TaskItem])] {
+        let grouped = Dictionary(grouping: visibleItems, by: TimelineSection.of)
+        return TimelineSection.allCases.compactMap { section in
+            guard let items = grouped[section], !items.isEmpty else { return nil }
+            return (section: section, items: items)
+        }
+    }
+
+    private var completedCount: Int {
+        relevantItems.filter(\.isCompleted).count
+    }
+
     var body: some View {
         NavigationStack {
             Group {
-                if reminderCount == 0 {
+                if visibleItems.isEmpty {
                     ContentUnavailableView {
-                        Label("No Reminders", systemImage: AppTab.reminders.systemImage)
+                        Label("No Tasks", systemImage: AppTab.reminders.systemImage)
                     } description: {
-                        Text("Reminders will appear here.")
+                        Text("All your tasks will appear here, sorted by date.")
                     } actions: {
                         Button("Add Reminder") { activeAdd = .reminder }
                             .buttonStyle(.glassProminent)
                     }
                 } else {
-                    List(reminders) { item in
-                        NavigationLink(value: item) {
-                            TaskRow(item: item)
+                    List {
+                        ForEach(sections, id: \.section) { group in
+                            Section {
+                                ForEach(group.items) { item in
+                                    TaskListRow(item: item)
+                                }
+                            } header: {
+                                Text(group.section.title)
+                                    .foregroundStyle(group.section == .overdue ? .red : .primary)
+                            }
+                            .headerProminence(.increased)
                         }
-                        .taskSwipeActions(item)
-                        .listSectionSeparator(.hidden)
                     }
                     .listStyle(.plain)
+                    .animation(.default, value: now)
                 }
             }
             .navigationTitle(AppTab.reminders.title)
@@ -49,6 +92,11 @@ struct RemindersView: View {
             .navigationDestination(for: TaskItem.self) { item in
                 TaskDetailView(item: item)
             }
+            .task(id: completedCount) {
+                now = .now
+                try? await Task.sleep(for: .seconds(TaskItem.completedGracePeriod))
+                now = .now
+            }
         }
     }
 }
@@ -56,5 +104,4 @@ struct RemindersView: View {
 #Preview {
     RemindersView()
         .modelContainer(for: [Project.self, TaskItem.self], inMemory: true)
-    
 }

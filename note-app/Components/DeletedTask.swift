@@ -18,6 +18,7 @@ struct DeletedTask: View {
         }
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
+                NotificationService.cancel(for: item)
                 modelContext.delete(item)
             } label: {
                 Label("Delete Permanently", systemImage: "trash.slash")
@@ -26,6 +27,7 @@ struct DeletedTask: View {
         .swipeActions(edge: .leading) {
             Button {
                 item.deletedAt = nil
+                NotificationService.update(for: item)
             } label: {
                 Label("Restore", systemImage: "arrow.uturn.backward")
             }

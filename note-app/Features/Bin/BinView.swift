@@ -76,9 +76,11 @@ struct BinView: View {
 
     private func emptyBin() {
         for project in deletedProjects {
+            project.tasks.forEach(NotificationService.cancel)
             modelContext.delete(project)
         }
         for item in deletedItems {
+            NotificationService.cancel(for: item)
             modelContext.delete(item)
         }
     }

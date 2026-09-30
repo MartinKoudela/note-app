@@ -16,6 +16,9 @@ struct AddTaskView: View {
     @State private var hasDueTime = false
     @State private var priority = Priority.none
     @State private var hasReminder: Bool
+    @State private var reminderHasSound = true
+    
+    @AppStorage(ReminderDefaults.timeKey) private var defaultReminderMinutes = ReminderDefaults.defaultMinutes
 
     init(dueDate: Date? = nil, hasReminder: Bool = false, project: Project? = nil) {
         _hasDate = State(initialValue: dueDate != nil)
@@ -44,7 +47,10 @@ struct AddTaskView: View {
                         }
                     }
 
-                    Toggle("Remind me", isOn: $hasReminder)
+                    Toggle("Remind me", isOn: $hasReminder.animation())
+                    if hasReminder {
+                        Toggle("Sound", isOn: $reminderHasSound)
+                    }
                 }
 
                 Section {
@@ -64,9 +70,31 @@ struct AddTaskView: View {
             }
             .navigationTitle("New Task")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                if hasReminder {
+                    applyReminderDefaults()
+                }
+            }
+            .onChange(of: hasReminder) { _, on in
+                if on {
+                    applyReminderDefaults()
+                    Task { await NotificationService.requestAuthorization() }
+                }
+            }
             .onChange(of: hasDueTime) { _, on in
                 if on {
+                    if date == Calendar.current.startOfDay(for: date) {
+                        date = ReminderDefaults.date(on: date, minutes: defaultReminderMinutes)
+                    }
                     hasReminder = true
+                } else {
+                    hasReminder = false
+                }
+            }
+            .onChange(of: hasDate) { _, on in
+                if !on {
+                    hasDueTime = false
+                    hasReminder = false
                 }
             }
             .toolbar {
@@ -83,6 +111,18 @@ struct AddTaskView: View {
         }
     }
 
+    private func applyReminderDefaults() {
+        withAnimation {
+            if !hasDate {
+                date = ReminderDefaults.nextDate(minutes: defaultReminderMinutes)
+                hasDate = true
+            } else if !hasDueTime {
+                date = ReminderDefaults.date(on: date, minutes: defaultReminderMinutes)
+            }
+            hasDueTime = true
+        }
+    }
+    
     private func save() {
         let dueDate: Date? = if hasDate {
             hasDueTime ? date : Calendar.current.startOfDay(for: date)
@@ -99,7 +139,9 @@ struct AddTaskView: View {
             hasReminder: hasReminder
         )
         item.notes = notes
+        item.reminderHasSound = reminderHasSound
         modelContext.insert(item)
+        NotificationService.update(for: item)
         dismiss()
     }
 }

@@ -7,6 +7,12 @@ struct TaskDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     @Query(sort: \Project.name) private var projects: [Project]
+    
+    @AppStorage(ReminderDefaults.timeKey) private var defaultReminderMinutes = ReminderDefaults.defaultMinutes
+    
+    private var reminderState: String {
+        "\(item.title)|\(String(describing: item.dueDate))|\(item.hasDueTime)|\(item.hasReminder)|\(item.reminderHasSound)|\(item.isCompleted)"
+    }
 
     private var availableProjects: [Project] {
         projects.filter { ($0.deletedAt == nil && !$0.isArchived) || $0 == item.project }
@@ -19,6 +25,7 @@ struct TaskDetailView: View {
             item.dueDate = on ? Calendar.current.startOfDay(for: .now) : nil
             if !on {
                 item.hasDueTime = false
+                item.hasReminder = false
             }
         }
     }
@@ -36,7 +43,7 @@ struct TaskDetailView: View {
             Section {
                 TextField("Title", text: $item.title)
                 TextField("Notes", text: $item.notes, axis: .vertical)
-                    .lineLimit(3...10)
+                    .lineLimit(3...)
             }
 
             Section {
@@ -50,7 +57,10 @@ struct TaskDetailView: View {
                     }
                 }
 
-                Toggle("Remind me", isOn: $item.hasReminder)
+                Toggle("Remind me", isOn: $item.hasReminder.animation())
+                if item.hasReminder {
+                    Toggle("Sound", isOn: $item.reminderHasSound)
+                }
             }
 
             Section {
@@ -75,6 +85,7 @@ struct TaskDetailView: View {
             Section {
                 Button {
                     item.isArchived = true
+                    NotificationService.cancel(for: item)
                     dismiss()
                 } label: {
                     Label(MoreDestination.archive.title, systemImage: MoreDestination.archive.systemImage)
@@ -82,6 +93,7 @@ struct TaskDetailView: View {
 
                 Button(role: .destructive) {
                     item.deletedAt = .now
+                    NotificationService.cancel(for: item)
                     dismiss()
                 } label: {
                     Label("Delete Task", systemImage: MoreDestination.bin.systemImage)
@@ -95,10 +107,40 @@ struct TaskDetailView: View {
         }
         .onChange(of: item.hasDueTime) { _, on in
             if on {
+                if let dueDate = item.dueDate, dueDate == Calendar.current.startOfDay(for: dueDate) {
+                    item.dueDate = ReminderDefaults.date(on: dueDate, minutes: defaultReminderMinutes)
+                }
                 item.hasReminder = true
-            } else if let dueDate = item.dueDate {
-                item.dueDate = Calendar.current.startOfDay(for: dueDate)
+            } else {
+                item.hasReminder = false
+                if let dueDate = item.dueDate {
+                    item.dueDate = Calendar.current.startOfDay(for: dueDate)
+                }
             }
+        }
+        .onChange(of: item.hasReminder) { _, on in
+            if on {
+                applyReminderDefaults()
+                Task { await NotificationService.requestAuthorization() }
+            }
+        }
+        .onChange(of: reminderState) {
+            NotificationService.update(for: item)
+        }
+    }
+}
+
+extension TaskDetailView {
+    private func applyReminderDefaults() {
+        withAnimation {
+            if let dueDate = item.dueDate {
+                if !item.hasDueTime {
+                    item.dueDate = ReminderDefaults.date(on: dueDate, minutes: defaultReminderMinutes)
+                }
+            } else {
+                item.dueDate = ReminderDefaults.nextDate(minutes: defaultReminderMinutes)
+            }
+            item.hasDueTime = true
         }
     }
 }

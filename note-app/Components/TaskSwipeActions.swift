@@ -8,12 +8,14 @@ struct TaskSwipeActions: ViewModifier {
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive) {
                     item.deletedAt = .now
+                    NotificationService.cancel(for: item)
                 } label: {
                     Label(MoreDestination.bin.title, systemImage: MoreDestination.bin.systemImage)
                 }
 
                 Button {
                     item.isArchived = true
+                    NotificationService.cancel(for: item)
                 } label: {
                     Label(MoreDestination.archive.title, systemImage: MoreDestination.archive.systemImage)
                 }

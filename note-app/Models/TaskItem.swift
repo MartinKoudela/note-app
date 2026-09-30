@@ -27,6 +27,8 @@ final class TaskItem {
     var hasDueTime: Bool = false
     var priority: Priority = Priority.none
     var hasReminder: Bool = false
+    var reminderHasSound: Bool = true
+    var reminderID: String = UUID().uuidString
     var isCompleted: Bool = false
     var completedAt: Date?
     var createdAt: Date = Date.now

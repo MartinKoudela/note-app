@@ -8,6 +8,7 @@ struct ProjectSwipeActions: ViewModifier {
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive) {
                     project.deletedAt = .now
+                    project.tasks.forEach(NotificationService.cancel)
                 } label: {
                     Label(MoreDestination.bin.title, systemImage: MoreDestination.bin.systemImage)
                 }
